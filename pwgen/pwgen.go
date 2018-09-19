@@ -210,6 +210,9 @@ func (pg *PwGen) Print() {
 	} else {
 		// output by columns
 		i, w := 0, screenWidth/pg.pwLength
+		if w == 0 {
+			w = 1
+		}
 		for p := range ch {
 			i++
 			if (i % w) == 0 {
