@@ -40,7 +40,7 @@ type PwGen struct {
 	chars                         []byte
 }
 
-// ByteSlice attaches the methods of Interface to []int, sorting in increasing order.
+// ByteSlice attaches the methods of Interface to []byte, sorting in increasing order.
 type ByteSlice []byte
 
 // Len returns length of ByteSlice element
