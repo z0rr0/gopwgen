@@ -52,7 +52,7 @@ func main() {
 	pwLength, numPw, err := pwgen.ParseArgs(args)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ERROR: required integer arguments")
-		return
+		os.Exit(1)
 	}
 	pg, err := pwgen.New(
 		pwLength, numPw, *removeChars,
@@ -60,7 +60,7 @@ func main() {
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
-		return
+		os.Exit(2)
 	}
 	fmt.Println(pg)
 	pg.Print()
