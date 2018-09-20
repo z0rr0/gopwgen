@@ -8,6 +8,8 @@ package pwgen
 
 import (
 	"math/rand"
+	"os"
+	"path"
 	"testing"
 )
 
@@ -23,7 +25,7 @@ func any(password string, symbols ByteSlice) bool {
 func TestNumerals(t *testing.T) {
 	pwLength := 8
 	pg, err := New(
-		pwLength, 10000, "",
+		pwLength, 10000, "", "",
 		false, true, false,
 		false, false, false, false, false,
 	)
@@ -47,7 +49,7 @@ func TestNumerals(t *testing.T) {
 func TestNoNumerals(t *testing.T) {
 	pwLength := 8
 	pg, err := New(
-		pwLength, 10000, "",
+		pwLength, 10000, "", "",
 		true, false, false,
 		false, false, false, false, false,
 	)
@@ -71,7 +73,7 @@ func TestNoNumerals(t *testing.T) {
 func TestNoCapitalize(t *testing.T) {
 	pwLength := 16
 	pg, err := New(
-		pwLength, 10000, "",
+		pwLength, 10000, "", "",
 		false, false, false,
 		true, false, false, false, false,
 	)
@@ -95,7 +97,7 @@ func TestNoCapitalize(t *testing.T) {
 func TestAmbiguous(t *testing.T) {
 	pwLength := 16
 	pg, err := New(
-		pwLength, 10000, "",
+		pwLength, 10000, "", "",
 		false, false, false,
 		false, true, false, false, false,
 	)
@@ -119,7 +121,7 @@ func TestAmbiguous(t *testing.T) {
 func TestNoVowels(t *testing.T) {
 	pwLength := 16
 	pg, err := New(
-		pwLength, 10000, "",
+		pwLength, 10000, "", "",
 		false, false, false,
 		false, false, false, true, false,
 	)
@@ -143,7 +145,7 @@ func TestNoVowels(t *testing.T) {
 func TestSymbols(t *testing.T) {
 	pwLength := 8
 	pg, err := New(
-		pwLength, 10000, "",
+		pwLength, 10000, "", "",
 		false, false, false,
 		false, false, true, false, false,
 	)
@@ -167,7 +169,7 @@ func TestSymbols(t *testing.T) {
 func TestNoSecure(t *testing.T) {
 	pwLength := 64
 	pg, err := New(
-		pwLength, 1000, "",
+		pwLength, 1000, "", "",
 		false, true, false,
 		false, false, false, false, false,
 	)
@@ -208,7 +210,7 @@ func TestNoSecure(t *testing.T) {
 func TestSecure(t *testing.T) {
 	pwLength := 64
 	pg, err := New(
-		pwLength, 1000, "",
+		pwLength, 1000, "", "",
 		false, false, false,
 		false, false, false, false, false,
 	)
@@ -243,11 +245,11 @@ func TestSecure(t *testing.T) {
 	}
 }
 
-func TestRemoveChars(t *testing.T) {	
+func TestRemoveChars(t *testing.T) {
 	pwLength := 8
 	removeChars := "abcdefghijklmnJKLMNOPQRSTUVWXYZ01234"
 	pg, err := New(
-		pwLength, 10000, removeChars,
+		pwLength, 10000, removeChars, "",
 		false, false, false,
 		false, false, false, false, false,
 	)
@@ -264,6 +266,64 @@ func TestRemoveChars(t *testing.T) {
 		}
 		if any(p, symbols) {
 			t.Errorf("%v found removed char", p)
+		}
+	}
+}
+
+func TestSHA1(t *testing.T) {
+	pwLength := 16
+	fileName := "pwgen_test.tmp"
+	fullName := path.Join(os.TempDir(), fileName)
+
+	f, err := os.Create(fullName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.WriteString("abcdef")
+	f.Close()
+
+	defer func() {
+		err = os.Remove(fullName)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+	// 1st generation
+	pg, err := New(
+		pwLength, 10000, "", fullName,
+		false, false, false,
+		false, false, false, false, false,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ch := pg.Passwords()
+	s1 := make([]string, pg.numPw)
+	i := 0
+	for p := range ch {
+		s1[i] = p
+		i++
+	}
+
+	// 2nd generation
+	pg, err = New(
+		pwLength, 10000, "", fullName,
+		false, false, false,
+		false, false, false, false, false,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ch = pg.Passwords()
+	s2 := make([]string, pg.numPw)
+	i = 0
+	for p := range ch {
+		s2[i] = p
+		i++
+	}
+	for i := range s1 {
+		if s1[i] != s2[i] {
+			t.Errorf("not equal %v == %v", s1[i], s2[i])
 		}
 	}
 }

@@ -7,10 +7,13 @@ package pwgen
 
 import (
 	crand "crypto/rand"
+	"crypto/sha1"
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
 	"math/rand"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -120,10 +123,24 @@ func randomSource(secure bool, seed int64) rand.Source {
 }
 
 // New returns new password generation structure.
-func New(pwLength, numPw int, removeChars string,
+func New(pwLength, numPw int, removeChars, sha1File string,
 	noNumerals, numerals, oneLine, noCapitalize, ambiguous, symbols, noVowels, secure bool) (*PwGen, error) {
 
-	source := randomSource(secure, 0)
+	var seed int64
+	if sha1File != "" {
+		f, err := os.Open(sha1File)
+		if err != nil {
+			return nil, err
+		}
+		h := sha1.New()
+		_, err = io.Copy(h, f)
+		if err != nil {
+			return nil, err
+		}
+		seed = int64(binary.LittleEndian.Uint64(h.Sum(nil)[:]))
+		f.Close()
+	}
+	source := randomSource(secure, seed)
 	random := rand.New(source)
 
 	if ambiguous {

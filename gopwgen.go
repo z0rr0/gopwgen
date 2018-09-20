@@ -41,6 +41,14 @@ func main() {
 	removeChars := flag.String("remove-chars", "",
 		"don't use the specified characters in password. "+
 			"This option will disable the phomeme-based generator and uses the random password generator.")
+	sha1File := flag.String("sha1", "",
+		"will use the sha1's hash of given file and the optional seed to create password."+
+			"It will allow you to compute the same password later, if you remember the file, seed, "+
+			"and pwgen's options used. ie: pwgen -H ~/your_favorite.mp3#your@email.com "+
+			"gives a list of possibles passwords for your pop3 account, and you can ask this list again and again."+
+			"\n\nWARNING: The  passwords  generated  using this option are not very random."+
+			"If you use this option, make sure the attacker can not obtain a copy of the file."+
+			"Also, note that the name of the file may be easily available from the ~/.history or ~/.bash_history file.")
 	flag.Parse()
 
 	if *help {
@@ -55,7 +63,7 @@ func main() {
 		os.Exit(1)
 	}
 	pg, err := pwgen.New(
-		pwLength, numPw, *removeChars,
+		pwLength, numPw, *removeChars, *sha1File,
 		*noNumerals, *numerals, *oneLine, *noCapitalize, *ambiguous, *symbols, *noVowels, *secure,
 	)
 	if err != nil {
