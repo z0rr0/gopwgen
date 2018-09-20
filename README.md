@@ -1,4 +1,4 @@
-[![GoDoc](https://godoc.org/github.com/z0rr0/gopwgen/pwgen?status.svg)](https://godoc.org/github.com/z0rr0/gopwgen/pwgen)
+[![GoDoc](https://godoc.org/github.com/z0rr0/gopwgen/pwgen?status.svg)](https://godoc.org/github.com/z0rr0/gopwgen/pwgen)  [![Build Status](https://travis-ci.com/z0rr0/gopwgen.svg?branch=master)](https://travis-ci.com/z0rr0/gopwgen)
 
 # gopwgen
 gopwgen - generate pronounceable passwords
