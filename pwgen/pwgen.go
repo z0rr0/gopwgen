@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	defaultPwLength = 8
-	defaultNumPw    = 160
-	screenWidth     = 80
+	defaultPwLength = 8   // default password length
+	defaultNumPw    = 160 // default number of generated passwords
+	screenWidth     = 80  // screen width for output by columns
 
 	// passwords alphabets
 	pwDigits    = "0123456789"
@@ -43,6 +43,9 @@ type PwGen struct {
 // ByteSlice attaches the methods of Interface to []byte, sorting in increasing order.
 type ByteSlice []byte
 
+// CryptoRandSource represents a source of uniformly-distributed random int64 values in the range [0, 1<<63).
+type CryptoRandSource struct{}
+
 // Len returns length of ByteSlice element
 func (p ByteSlice) Len() int           { return len(p) }
 func (p ByteSlice) Less(i, j int) bool { return p[i] < p[j] }
@@ -60,9 +63,6 @@ func (p ByteSlice) Search(x byte) int {
 	return -1
 }
 
-// CryptoRandSource represents a source of uniformly-distributed random int64 values in the range [0, 1<<63).
-type CryptoRandSource struct{}
-
 // Int63 returns a non-negative random 63-bit integer as an int64 from CryptoRandSource.
 func (CryptoRandSource) Int63() int64 {
 	var b [8]byte
@@ -71,7 +71,7 @@ func (CryptoRandSource) Int63() int64 {
 }
 
 // Seed is fake CryptoRandSource Seed implementation for Source interface.
-func (CryptoRandSource) Seed(_ int64) {}
+func (CryptoRandSource) Seed(int64) {}
 
 // ParseArgs parses string arguments to length and number of passwords.
 func ParseArgs(args []string) (int, int, error) {
@@ -230,6 +230,7 @@ func (pg *PwGen) Print() {
 	}
 }
 
+// alphabet returns byte slice of chars for passwords generation.
 func (pg *PwGen) alphabet(removeChars []byte) ([]byte, error) {
 	var result []byte
 
