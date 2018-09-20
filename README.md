@@ -13,5 +13,5 @@ go install github.com/z0rr0/gopwgen
 ## Test
 
 ```bash
-go test 
+go test -v github.com/z0rr0/gopwgen/pwgen
 ```

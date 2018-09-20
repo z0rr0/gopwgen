@@ -304,7 +304,6 @@ func TestSHA1(t *testing.T) {
 		s1[i] = p
 		i++
 	}
-
 	// 2nd generation
 	pg, err = New(
 		pwLength, 10000, "", fullName,
