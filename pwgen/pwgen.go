@@ -239,12 +239,11 @@ func (pg *PwGen) Print(out io.Writer) {
 		}
 		for p := range ch {
 			i++
-			if (i % w) == 0 {
+			ended = (i % w) == 0
+			if ended {
 				fmt.Fprintln(out, p)
-				ended = true
 			} else {
 				fmt.Fprintf(out, "%s ", p)
-				ended = false
 			}
 		}
 	}
