@@ -7,6 +7,9 @@
 package pwgen
 
 import (
+	"bytes"
+	"errors"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
@@ -31,6 +34,11 @@ func TestNumerals(t *testing.T) {
 	)
 	if err != nil {
 		t.Fatal(err)
+	}
+	expectedString := "PwGen <length: 8, number:10000> " +
+		"from abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	if s := pg.String(); s != expectedString {
+		t.Errorf("unexpected string; %v", s)
 	}
 	symbols := ByteSlice(pwDigits)
 	symbols.Sort()
@@ -270,6 +278,42 @@ func TestRemoveChars(t *testing.T) {
 	}
 }
 
+func TestNewFail(t *testing.T) {
+	_, err := New(
+		0, 10000, "", "",
+		false, false, false,
+		false, false, false, false, false,
+	)
+	if err == nil {
+		t.Errorf("no expected error for zero password length")
+	}
+	_, err = New(
+		16, 0, "", "",
+		false, false, false,
+		false, false, false, false, false,
+	)
+	if err == nil {
+		t.Errorf("no expected error for zero passwords numbers")
+	}
+	removeChars := "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	_, err = New(
+		16, 100, removeChars, "",
+		false, false, false,
+		false, false, false, false, false,
+	)
+	if err == nil {
+		t.Errorf("no expected error - no symbols")
+	}
+	_, err = New(
+		16, 100, "", "/root/bad_123",
+		false, false, false,
+		false, false, false, false, false,
+	)
+	if err == nil {
+		t.Errorf("no expected error - failed file read")
+	}
+}
+
 func TestSHA1(t *testing.T) {
 	pwLength := 16
 	fileName := "pwgen_test.tmp"
@@ -324,5 +368,177 @@ func TestSHA1(t *testing.T) {
 		if s1[i] != s2[i] {
 			t.Errorf("not equal %v == %v", s1[i], s2[i])
 		}
+	}
+}
+
+func TestOneLinePrint(t *testing.T) {
+	var (
+		buffer bytes.Buffer
+		out    string
+	)
+	pg, err := New(
+		1, 1, "", "",
+		false, false, true,
+		false, false, false, false, false,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	values := [][2]int{
+		{5, 3},
+		{1, 1},
+		{15, 30},
+		{5, 150},
+		{15, 70},
+	}
+	for _, params := range values {
+		pg.pwLength, pg.numPw = params[0], params[1]
+		pg.Print(&buffer)
+
+		out = buffer.String()
+		if lo, le := len(out), pg.numPw*(1+pg.pwLength)+1; lo != le {
+			t.Errorf("invalid length [number=%v], real not equal expected %v = %v", pg.numPw, lo, le)
+		}
+		buffer = bytes.Buffer{}
+	}
+}
+
+func TestMultiLinesPrint(t *testing.T) {
+	var (
+		buffer bytes.Buffer
+		out    string
+		w, le  int
+	)
+	pg, err := New(
+		1, 1, "", "",
+		false, false, false,
+		false, false, false, false, false,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	values := [][2]int{
+		{5, 3},
+		{1, 1},
+		{15, 30},
+		{5, 150},
+		{15, 70},
+		{100, 2},
+	}
+	for _, params := range values {
+		pg.pwLength, pg.numPw = params[0], params[1]
+		pg.Print(&buffer)
+		out = buffer.String()
+
+		le = pg.numPw*(1+pg.pwLength) + 1
+		w = screenWidth / pg.pwLength
+		if w == 0 {
+			w = 1
+			le--
+		} else {
+			if (pg.numPw % w) == 0 {
+				le--
+			}
+		}
+		if lo := len(out); lo != le {
+			t.Errorf("invalid length [number=%v], real not equal expected %v = %v", pg.numPw, lo, le)
+		}
+		buffer = bytes.Buffer{}
+	}
+}
+
+func TestParseArgs(t *testing.T) {
+	valueError := errors.New("error")
+	values := []struct {
+		in  []string
+		e   error
+		out [2]int
+	}{
+		{[]string{}, nil, [2]int{defaultPwLength, defaultNumPw}},
+		{[]string{"12"}, nil, [2]int{12, defaultNumPw}},
+		{[]string{"12", "23"}, nil, [2]int{12, 23}},
+		{[]string{"12", "23", "7"}, nil, [2]int{12, 23}},
+		{[]string{"12", "23", "7", "8", "9"}, nil, [2]int{12, 23}},
+		{[]string{"a"}, valueError, [2]int{0, 0}},
+		{[]string{"2", "a"}, valueError, [2]int{0, 0}},
+		{[]string{"-1"}, valueError, [2]int{0, 0}},
+		{[]string{"5", "-5"}, valueError, [2]int{0, 0}},
+		{[]string{"a", "-5"}, valueError, [2]int{0, 0}},
+		{[]string{"-5", "5"}, valueError, [2]int{0, 0}},
+	}
+	for i, value := range values {
+		l, n, err := ParseArgs(value.in)
+		switch {
+		case (err != nil) && (value.e == nil):
+			t.Errorf("<%v> gotten unexpected error: %v", value.in, err)
+		case (err == nil) && (value.e != nil):
+			t.Errorf("<%v> no unexpected error: %v", value.in, value.e)
+		default:
+			if l != value.out[0] {
+				t.Errorf("failed length [%v]: %v", i, l)
+			}
+			if n != value.out[1] {
+				t.Errorf("failed numbers [%v]: %v", i, n)
+			}
+		}
+
+	}
+}
+
+func BenchmarkNew(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		pg, err := New(
+			defaultPwLength, defaultNumPw, "", "",
+			false, false, false,
+			false, false, false, false, false,
+		)
+		if err != nil {
+			b.Fatal(err)
+		}
+		pg.Print(ioutil.Discard)
+	}
+}
+
+func BenchmarkOnePassword(b *testing.B) {
+	pg, err := New(
+		defaultPwLength, defaultNumPw, "", "",
+		false, false, false,
+		false, false, false, false, false,
+	)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		pg.Generate()
+	}
+}
+
+func BenchmarkNewSecure(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		pg, err := New(
+			defaultPwLength, defaultNumPw, "", "",
+			false, false, false,
+			false, false, false, false, true,
+		)
+		if err != nil {
+			b.Fatal(err)
+		}
+		pg.Print(ioutil.Discard)
+	}
+}
+
+func BenchmarkOnePasswordSecure(b *testing.B) {
+	pg, err := New(
+		defaultPwLength, defaultNumPw, "", "",
+		false, false, false,
+		false, false, false, false, true,
+	)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		pg.Generate()
 	}
 }

@@ -82,8 +82,9 @@ func ParseArgs(args []string) (int, int, error) {
 	pwLength := defaultPwLength
 	numPw := defaultNumPw
 
-	switch n := len(args); n {
-	case 1:
+	n := len(args)
+	switch {
+	case n == 1:
 		pwLength, err = strconv.Atoi(args[0])
 		if err != nil {
 			return 0, 0, err
@@ -92,7 +93,7 @@ func ParseArgs(args []string) (int, int, error) {
 			return 0, 0, errors.New("password length is to be positive")
 		}
 		return pwLength, numPw, nil
-	case 2:
+	case n >= 2:
 		pwLength, err = strconv.Atoi(args[0])
 		if err != nil {
 			return 0, 0, err
@@ -127,6 +128,12 @@ func New(pwLength, numPw int, removeChars, sha1File string,
 	noNumerals, numerals, oneLine, noCapitalize, ambiguous, symbols, noVowels, secure bool) (*PwGen, error) {
 
 	var seed int64
+	if pwLength < 1 {
+		return nil, errors.New("password length should be greater than 0")
+	}
+	if numPw < 1 {
+		return nil, errors.New("password length should be greater than 0")
+	}
 	if sha1File != "" {
 		f, err := os.Open(sha1File)
 		if err != nil {
@@ -216,13 +223,13 @@ func (pg *PwGen) Passwords() chan string {
 }
 
 // Print outputs required passwords.
-func (pg *PwGen) Print() {
+func (pg *PwGen) Print(out io.Writer) {
 	var ended bool
 	ch := pg.Passwords()
 	if pg.oneLine {
 		// output as one line
 		for p := range ch {
-			fmt.Printf("%s ", p)
+			fmt.Fprintf(out, "%s ", p)
 		}
 	} else {
 		// output by columns
@@ -233,17 +240,17 @@ func (pg *PwGen) Print() {
 		for p := range ch {
 			i++
 			if (i % w) == 0 {
-				fmt.Println(p)
+				fmt.Fprintln(out, p)
 				ended = true
 			} else {
-				fmt.Printf("%s ", p)
+				fmt.Fprintf(out, "%s ", p)
 				ended = false
 			}
 		}
 	}
 	// new line if it's needed
 	if !ended {
-		fmt.Println()
+		fmt.Fprintln(out)
 	}
 }
 

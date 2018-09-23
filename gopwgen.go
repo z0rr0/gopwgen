@@ -70,6 +70,5 @@ func main() {
 		fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
 		os.Exit(2)
 	}
-	//fmt.Println(pg)
-	pg.Print()
+	pg.Print(os.Stdout)
 }

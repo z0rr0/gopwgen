@@ -56,6 +56,27 @@ go install github.com/z0rr0/gopwgen
 go test -v github.com/z0rr0/gopwgen/pwgen
 ```
 
+Coverage, race detection and benchmarks:
+
+```bash
+go test -v -race -cover -coverprofile=coverage.out -trace trace.out -benchmem -bench=. github.com/z0rr0/gopwgen/pwgen
+
+goos: linux
+goarch: amd64
+pkg: github.com/z0rr0/gopwgen/pwgen
+BenchmarkNew-4                       200           6660014 ns/op           19542 B/op        607 allocs/op
+BenchmarkOnePassword-4            200000              9321 ns/op              16 B/op          2 allocs/op
+BenchmarkNewSecure-4                 100          19503809 ns/op           33390 B/op       3007 allocs/op
+BenchmarkOnePasswordSecure-4       20000             60037 ns/op             136 B/op         17 allocs/op
+PASS
+coverage: 99.2% of statements
+ok      github.com/z0rr0/gopwgen/pwgen  13.441s
+
+# show reports
+go tool cover -html=coverage.out
+go tool trace pwgen.test trace.out
+```
+
 ## License
 
 This source code is governed by a MIT license that can be found in the [LICENSE](https://github.com/z0rr0/gopwgen/blob/master/LICENSE) file.
