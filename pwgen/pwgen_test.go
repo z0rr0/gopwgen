@@ -499,7 +499,7 @@ func BenchmarkNew(b *testing.B) {
 	}
 }
 
-func BenchmarkOnePassword(b *testing.B) {
+func BenchmarkGenerate(b *testing.B) {
 	pg, err := New(
 		defaultPwLength, defaultNumPw, "", "",
 		false, false, false,
@@ -528,7 +528,7 @@ func BenchmarkNewSecure(b *testing.B) {
 	}
 }
 
-func BenchmarkOnePasswordSecure(b *testing.B) {
+func BenchmarkGenerateSecure(b *testing.B) {
 	pg, err := New(
 		defaultPwLength, defaultNumPw, "", "",
 		false, false, false,
