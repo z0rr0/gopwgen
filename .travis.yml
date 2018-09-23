@@ -4,7 +4,7 @@ go:
   - "1.11"
 
 script:
-  - go test -v -race -cover -covermode=atomic github.com/z0rr0/gopwgen/pwgen
+  - go test -v -race -cover -coverprofile=coverage.out -covermode=atomic github.com/z0rr0/gopwgen/pwgen
 
 branches:
   only:
