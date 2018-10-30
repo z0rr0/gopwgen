@@ -1,4 +1,7 @@
 [![GoDoc](https://godoc.org/github.com/z0rr0/gopwgen/pwgen?status.svg)](https://godoc.org/github.com/z0rr0/gopwgen/pwgen)  [![Build Status](https://travis-ci.com/z0rr0/gopwgen.svg?branch=master)](https://travis-ci.com/z0rr0/gopwgen) [![codecov](https://codecov.io/gh/z0rr0/gopwgen/branch/master/graph/badge.svg)](https://codecov.io/gh/z0rr0/gopwgen)
+[![version](https://img.shields.io/github/tag/z0rr0/gopwgen.svg)](https://github.com/z0rr0/gopwgen/releases/latest)
+[![license](https://img.shields.io/github/license/z0rr0/gopwgen.svg)](https://github.com/z0rr0/gopwgen/blob/master/LICENSE)
+
 
 # gopwgen
 
