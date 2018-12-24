@@ -67,13 +67,13 @@ go test -v -race -cover -coverprofile=coverage.out -trace trace.out -benchmem -b
 goos: linux
 goarch: amd64
 pkg: github.com/z0rr0/gopwgen/pwgen
-BenchmarkNew-4                       200           6660014 ns/op           19542 B/op        607 allocs/op
-BenchmarkOnePassword-4            200000              9321 ns/op              16 B/op          2 allocs/op
-BenchmarkNewSecure-4                 100          19503809 ns/op           33390 B/op       3007 allocs/op
-BenchmarkOnePasswordSecure-4       20000             60037 ns/op             136 B/op         17 allocs/op
+BenchmarkNew-4                       200           6586745 ns/op           19546 B/op        607 allocs/op
+BenchmarkGenerate-4               200000              9269 ns/op              16 B/op          2 allocs/op
+BenchmarkNewSecure-4                 100          19348940 ns/op           33448 B/op       3008 allocs/op
+BenchmarkGenerateSecure-4          20000             61219 ns/op             136 B/op         17 allocs/op
 PASS
-coverage: 99.2% of statements
-ok      github.com/z0rr0/gopwgen/pwgen  13.441s
+coverage: 94.2% of statements
+ok      github.com/z0rr0/gopwgen/pwgen  14.684s
 
 # show reports
 go tool cover -html=coverage.out

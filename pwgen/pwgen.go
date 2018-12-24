@@ -69,7 +69,10 @@ func (p ByteSlice) Search(x byte) int {
 // Int63 returns a non-negative random 63-bit integer as an int64 from CryptoRandSource.
 func (CryptoRandSource) Int63() int64 {
 	var b [8]byte
-	crand.Read(b[:])
+	_, err := crand.Read(b[:])
+	if err != nil {
+		panic(err) // fail - can't continue
+	}
 	return int64(binary.LittleEndian.Uint64(b[:]) & (1<<63 - 1))
 }
 
@@ -142,10 +145,14 @@ func New(pwLength, numPw int, removeChars, sha1File string,
 		h := sha1.New()
 		_, err = io.Copy(h, f)
 		if err != nil {
+			_ = f.Close() // ignore error
 			return nil, err
 		}
 		seed = int64(binary.LittleEndian.Uint64(h.Sum(nil)[:]))
-		f.Close()
+		err = f.Close()
+		if err != nil {
+			return nil, err
+		}
 	}
 	source := randomSource(secure, seed)
 	random := rand.New(source)
@@ -223,13 +230,16 @@ func (pg *PwGen) Passwords() chan string {
 }
 
 // Print outputs required passwords.
-func (pg *PwGen) Print(out io.Writer) {
+func (pg *PwGen) Print(out io.Writer) error {
 	var ended bool
 	ch := pg.Passwords()
 	if pg.oneLine {
 		// output as one line
 		for p := range ch {
-			fmt.Fprintf(out, "%s ", p)
+			_, err := fmt.Fprintf(out, "%s ", p)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		// output by columns
@@ -241,16 +251,26 @@ func (pg *PwGen) Print(out io.Writer) {
 			i++
 			ended = (i % w) == 0
 			if ended {
-				fmt.Fprintln(out, p)
+				_, err := fmt.Fprintln(out, p)
+				if err != nil {
+					return err
+				}
 			} else {
-				fmt.Fprintf(out, "%s ", p)
+				_, err := fmt.Fprintf(out, "%s ", p)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
 	// new line if it's needed
 	if !ended {
-		fmt.Fprintln(out)
+		_, err := fmt.Fprintln(out)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // alphabet returns byte slice of chars for passwords generation.

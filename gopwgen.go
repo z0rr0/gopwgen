@@ -59,7 +59,10 @@ func main() {
 	args := flag.Args()
 	pwLength, numPw, err := pwgen.ParseArgs(args)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "ERROR: required integer arguments")
+		_, err = fmt.Fprintln(os.Stderr, "ERROR: required integer arguments")
+		if err != nil {
+			panic(err)
+		}
 		os.Exit(1)
 	}
 	pg, err := pwgen.New(
@@ -67,8 +70,14 @@ func main() {
 		*noNumerals, *numerals, *oneLine, *noCapitalize, *ambiguous, *symbols, *noVowels, *secure,
 	)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+		_, err = fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+		if err != nil {
+			panic(err)
+		}
 		os.Exit(2)
 	}
-	pg.Print(os.Stdout)
+	err = pg.Print(os.Stdout)
+	if err != nil {
+		panic(err)
+	}
 }

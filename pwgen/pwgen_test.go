@@ -323,8 +323,14 @@ func TestSHA1(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	f.WriteString("abcdef")
-	f.Close()
+	_, err = f.WriteString("abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = f.Close()
+	if err != nil {
+		t.Errorf("can not close file: %v", err)
+	}
 
 	defer func() {
 		err = os.Remove(fullName)
@@ -391,13 +397,15 @@ func TestOneLinePrint(t *testing.T) {
 		{5, 150},
 		{15, 70},
 	}
-	for _, params := range values {
+	for i, params := range values {
 		pg.pwLength, pg.numPw = params[0], params[1]
-		pg.Print(&buffer)
-
+		err := pg.Print(&buffer)
+		if err != nil {
+			t.Fatal(err)
+		}
 		out = buffer.String()
 		if lo, le := len(out), pg.numPw*(1+pg.pwLength)+1; lo != le {
-			t.Errorf("invalid length [number=%v], real not equal expected %v = %v", pg.numPw, lo, le)
+			t.Errorf("[%v] invalid length [number=%v], real not equal expected %v = %v", i, pg.numPw, lo, le)
 		}
 		buffer = bytes.Buffer{}
 	}
@@ -427,7 +435,10 @@ func TestMultiLinesPrint(t *testing.T) {
 	}
 	for _, params := range values {
 		pg.pwLength, pg.numPw = params[0], params[1]
-		pg.Print(&buffer)
+		err = pg.Print(&buffer)
+		if err != nil {
+			t.Fatal(err)
+		}
 		out = buffer.String()
 
 		le = pg.numPw*(1+pg.pwLength) + 1
@@ -495,7 +506,10 @@ func BenchmarkNew(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		pg.Print(ioutil.Discard)
+		err = pg.Print(ioutil.Discard)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -524,7 +538,10 @@ func BenchmarkNewSecure(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		pg.Print(ioutil.Discard)
+		err = pg.Print(ioutil.Discard)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
