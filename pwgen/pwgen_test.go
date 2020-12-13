@@ -13,12 +13,16 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"sort"
 	"testing"
 )
 
-func any(password string, symbols ByteSlice) bool {
+// any returns true if any chars frm symbols are included to the password.
+func any(password string, symbols []byte) bool {
+	symLen := len(symbols)
 	for _, c := range []byte(password) {
-		if symbols.Search(c) >= 0 {
+		i := sort.Search(symLen, func(i int) bool { return symbols[i] >= c })
+		if i < symLen && symbols[i] == c {
 			return true
 		}
 	}
@@ -40,8 +44,8 @@ func TestNumerals(t *testing.T) {
 	if s := pg.String(); s != expectedString {
 		t.Errorf("unexpected string; %v", s)
 	}
-	symbols := ByteSlice(pwDigits)
-	symbols.Sort()
+	symbols := []byte(pwDigits)
+	sort.Slice(symbols, func(i, j int) bool { return symbols[i] < symbols[j] })
 
 	ch := pg.Passwords()
 	for p := range ch {
@@ -64,8 +68,8 @@ func TestNoNumerals(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	symbols := ByteSlice(pwDigits)
-	symbols.Sort()
+	symbols := []byte(pwDigits)
+	sort.Slice(symbols, func(i, j int) bool { return symbols[i] < symbols[j] })
 
 	ch := pg.Passwords()
 	for p := range ch {
@@ -88,8 +92,8 @@ func TestNoCapitalize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	symbols := ByteSlice(pwUppers)
-	symbols.Sort()
+	symbols := []byte(pwUppers)
+	sort.Slice(symbols, func(i, j int) bool { return symbols[i] < symbols[j] })
 
 	ch := pg.Passwords()
 	for p := range ch {
@@ -112,8 +116,8 @@ func TestAmbiguous(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	symbols := ByteSlice(pwAmbiguous)
-	symbols.Sort()
+	symbols := []byte(pwAmbiguous)
+	sort.Slice(symbols, func(i, j int) bool { return symbols[i] < symbols[j] })
 
 	ch := pg.Passwords()
 	for p := range ch {
@@ -136,8 +140,8 @@ func TestNoVowels(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	symbols := ByteSlice(pwVowels)
-	symbols.Sort()
+	symbols := []byte(pwVowels)
+	sort.Slice(symbols, func(i, j int) bool { return symbols[i] < symbols[j] })
 
 	ch := pg.Passwords()
 	for p := range ch {
@@ -160,8 +164,8 @@ func TestSymbols(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	symbols := ByteSlice(pwSymbols)
-	symbols.Sort()
+	symbols := []byte(pwSymbols)
+	sort.Slice(symbols, func(i, j int) bool { return symbols[i] < symbols[j] })
 
 	ch := pg.Passwords()
 	for p := range ch {
@@ -264,8 +268,8 @@ func TestRemoveChars(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	symbols := ByteSlice(removeChars)
-	symbols.Sort()
+	symbols := []byte(removeChars)
+	sort.Slice(symbols, func(i, j int) bool { return symbols[i] < symbols[j] })
 
 	ch := pg.Passwords()
 	for p := range ch {
@@ -444,7 +448,7 @@ func TestMultiLinesPrint(t *testing.T) {
 		le = pg.numPw*(1+pg.pwLength) + 1
 		w = screenWidth / pg.pwLength
 		if w == 0 {
-			w = 1
+			//w = 1
 			le--
 		} else {
 			if (pg.numPw % w) == 0 {

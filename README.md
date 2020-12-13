@@ -2,7 +2,6 @@
 [![version](https://img.shields.io/github/tag/z0rr0/gopwgen.svg)](https://github.com/z0rr0/gopwgen/releases/latest)
 [![license](https://img.shields.io/github/license/z0rr0/gopwgen.svg)](https://github.com/z0rr0/gopwgen/blob/master/LICENSE)
 
-
 # gopwgen
 
 GoPwGen - generate pronounceable passwords
@@ -64,16 +63,20 @@ Coverage, race detection and benchmarks:
 ```bash
 go test -v -race -cover -coverprofile=coverage.out -trace trace.out -benchmem -bench=. github.com/z0rr0/gopwgen/pwgen
 
-goos: linux
+goos: darwin
 goarch: amd64
 pkg: github.com/z0rr0/gopwgen/pwgen
-BenchmarkNew-4                       200           6586745 ns/op           19546 B/op        607 allocs/op
-BenchmarkGenerate-4               200000              9269 ns/op              16 B/op          2 allocs/op
-BenchmarkNewSecure-4                 100          19348940 ns/op           33448 B/op       3008 allocs/op
-BenchmarkGenerateSecure-4          20000             61219 ns/op             136 B/op         17 allocs/op
+BenchmarkNew
+BenchmarkNew-8                       501           2280420 ns/op           20132 B/op        607 allocs/op
+BenchmarkGenerate
+BenchmarkGenerate-8               217873              5272 ns/op              16 B/op          2 allocs/op
+BenchmarkNewSecure
+BenchmarkNewSecure-8                 289           4109399 ns/op           34100 B/op       3008 allocs/op
+BenchmarkGenerateSecure
+BenchmarkGenerateSecure-8          57981             19399 ns/op             136 B/op         17 allocs/op
 PASS
-coverage: 94.2% of statements
-ok      github.com/z0rr0/gopwgen/pwgen  14.684s
+coverage: 94.0% of statements
+ok      github.com/z0rr0/gopwgen/pwgen  7.321s
 
 # show reports
 go tool cover -html=coverage.out
@@ -82,4 +85,5 @@ go tool trace pwgen.test trace.out
 
 ## License
 
-This source code is governed by a MIT license that can be found in the [LICENSE](https://github.com/z0rr0/gopwgen/blob/master/LICENSE) file.
+This source code is governed by a MIT license that can be found in
+the [LICENSE](https://github.com/z0rr0/gopwgen/blob/master/LICENSE) file.

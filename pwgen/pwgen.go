@@ -43,28 +43,8 @@ type PwGen struct {
 	chars                         []byte
 }
 
-// ByteSlice attaches the methods of Interface to []byte, sorting in increasing order.
-type ByteSlice []byte
-
 // CryptoRandSource represents a source of uniformly-distributed random int64 values in the range [0, 1<<63).
 type CryptoRandSource struct{}
-
-// Len returns length of ByteSlice element
-func (p ByteSlice) Len() int           { return len(p) }
-func (p ByteSlice) Less(i, j int) bool { return p[i] < p[j] }
-func (p ByteSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-
-// Sort sorts ByteSlice elements.
-func (p ByteSlice) Sort() { sort.Sort(p) }
-
-// Search checks what x is in ByteSlice.
-func (p ByteSlice) Search(x byte) int {
-	i := sort.Search(len(p), func(i int) bool { return p[i] >= x })
-	if i < len(p) && p[i] == x {
-		return i
-	}
-	return -1
-}
 
 // Int63 returns a non-negative random 63-bit integer as an int64 from CryptoRandSource.
 func (CryptoRandSource) Int63() int64 {
@@ -289,11 +269,13 @@ func (pg *PwGen) alphabet(removeChars []byte) ([]byte, error) {
 	}
 	byteChars := []byte(chars)
 
-	if len(removeChars) > 0 {
-		byteSlice := ByteSlice([]byte(removeChars))
-		byteSlice.Sort()
+	if rc := len(removeChars); rc > 0 {
+		result = make([]byte, 0, len(byteChars))
+		sort.Slice(removeChars, func(i, j int) bool { return removeChars[i] < removeChars[j] })
 		for _, c := range byteChars {
-			if byteSlice.Search(c) < 0 {
+			i := sort.Search(rc, func(i int) bool { return removeChars[i] >= c })
+			// not found in removeChars, then include to the result
+			if !(i < rc && removeChars[i] == c) {
 				result = append(result, c)
 			}
 		}
